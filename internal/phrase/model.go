@@ -3,13 +3,13 @@ package phrase
 
 // Parts contains the components used to build a phrase.
 type Parts struct {
-	Subjects    []string
-	Verbs       []string
-	Complements []string
+	Subjects    []string `json:"subjects"`
+	Verbs       []string `json:"verbs"`
+	Complements []string `json:"complements"`
 }
 
 // Category groups phrase parts under a name.
 type Category struct {
-	Name  string
-	Parts Parts
+	Name string `json:"name"`
+	Parts
 }

@@ -8,12 +8,10 @@ import (
 	"github.com/joaovv-Vitor/phraseforge/internal/phrase"
 )
 
-func run(args []string, out io.Writer) error {
+func run(args []string, out io.Writer, categories []phrase.Category) error {
 	if len(args) == 0 {
 		return fmt.Errorf("command is required: use generate or categories")
 	}
-
-	categories := defaultCategories()
 
 	switch args[0] {
 	case "generate":
@@ -72,25 +70,4 @@ func runGenerate(args []string, out io.Writer, categories []phrase.Category) err
 	}
 
 	return nil
-}
-
-func defaultCategories() []phrase.Category {
-	return []phrase.Category{
-		{
-			Name: "programming",
-			Parts: phrase.Parts{
-				Subjects:    []string{"Codigo simples", "Um bom desenvolvedor"},
-				Verbs:       []string{"reduz", "simplifica"},
-				Complements: []string{"problemas futuros", "o trabalho da equipe"},
-			},
-		},
-		{
-			Name: "study",
-			Parts: phrase.Parts{
-				Subjects:    []string{"A pratica constante", "A revisao diaria"},
-				Verbs:       []string{"fortalece", "melhora"},
-				Complements: []string{"o aprendizado", "o raciocinio logico"},
-			},
-		},
-	}
 }
