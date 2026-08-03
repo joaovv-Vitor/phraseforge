@@ -7,3 +7,9 @@ type Parts struct {
 	Verbs       []string
 	Complements []string
 }
+
+// Category groups phrase parts under a name.
+type Category struct {
+	Name  string
+	Parts Parts
+}
