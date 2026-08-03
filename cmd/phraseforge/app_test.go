@@ -5,6 +5,8 @@ import (
 	"fmt"
 	"strings"
 	"testing"
+
+	"github.com/joaovv-Vitor/phraseforge/internal/phrase"
 )
 
 func TestRun(t *testing.T) {
@@ -74,7 +76,7 @@ func TestRun(t *testing.T) {
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			var output bytes.Buffer
-			err := run(tt.args, &output)
+			err := run(tt.args, &output, testCategories())
 
 			if tt.wantErr != "" {
 				if err == nil {
@@ -106,6 +108,27 @@ func TestRun(t *testing.T) {
 				t.Errorf("run() output = %q, want %q", got, tt.want)
 			}
 		})
+	}
+}
+
+func testCategories() []phrase.Category {
+	return []phrase.Category{
+		{
+			Name: "programming",
+			Parts: phrase.Parts{
+				Subjects:    []string{"Codigo simples", "Um bom desenvolvedor"},
+				Verbs:       []string{"reduz", "simplifica"},
+				Complements: []string{"problemas futuros", "o trabalho da equipe"},
+			},
+		},
+		{
+			Name: "study",
+			Parts: phrase.Parts{
+				Subjects:    []string{"A pratica constante", "A revisao diaria"},
+				Verbs:       []string{"fortalece", "melhora"},
+				Complements: []string{"o aprendizado", "o raciocinio logico"},
+			},
+		},
 	}
 }
 

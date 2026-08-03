@@ -1,0 +1,16 @@
+{
+  "categories": [
+    {
+      "name": "programming",
+      "subjects": ["Codigo simples", "Um bom desenvolvedor"],
+      "verbs": ["reduz", "simplifica"],
+      "complements": ["problemas futuros", "o trabalho da equipe"]
+    },
+    {
+      "name": "study",
+      "subjects": ["A pratica constante", "A revisao diaria"],
+      "verbs": ["fortalece", "melhora"],
+      "complements": ["o aprendizado", "o raciocinio logico"]
+    }
+  ]
+}
