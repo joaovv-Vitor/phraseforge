@@ -22,12 +22,14 @@ func TestLoadCategories(t *testing.T) {
   "categories": [
     {
       "name": "programming",
+      "template": "{subject} {verb} {complement}",
       "subjects": ["Codigo simples"],
       "verbs": ["reduz"],
       "complements": ["problemas futuros"]
     },
     {
       "name": "study",
+      "template": "{subject} {verb} {complement}",
       "subjects": ["A pratica constante"],
       "verbs": ["fortalece"],
       "complements": ["o aprendizado"]
@@ -50,48 +52,77 @@ func TestLoadCategories(t *testing.T) {
 			name: "returns error for category without name",
 			contents: `{
   "categories": [{
+    "template": "{subject} {verb} {complement}",
     "subjects": ["Codigo simples"],
     "verbs": ["reduz"],
     "complements": ["problemas futuros"]
   }]
 }`,
-			wantErr: "category 1 has an empty name",
+			wantErr: "category name cannot be empty",
 		},
 		{
 			name: "returns error for category without subjects",
 			contents: `{
   "categories": [{
     "name": "programming",
+    "template": "{subject} {verb} {complement}",
     "subjects": [],
     "verbs": ["reduz"],
     "complements": ["problemas futuros"]
   }]
 }`,
-			wantErr: "category \"programming\" has no subjects",
+			wantErr: "category \"programming\": subjects cannot be empty",
 		},
 		{
 			name: "returns error for category without verbs",
 			contents: `{
   "categories": [{
     "name": "programming",
+    "template": "{subject} {verb} {complement}",
     "subjects": ["Codigo simples"],
     "verbs": [],
     "complements": ["problemas futuros"]
   }]
 }`,
-			wantErr: "category \"programming\" has no verbs",
+			wantErr: "category \"programming\": verbs cannot be empty",
 		},
 		{
 			name: "returns error for category without complements",
 			contents: `{
   "categories": [{
     "name": "programming",
+    "template": "{subject} {verb} {complement}",
     "subjects": ["Codigo simples"],
     "verbs": ["reduz"],
     "complements": []
   }]
 }`,
-			wantErr: "category \"programming\" has no complements",
+			wantErr: "category \"programming\": complements cannot be empty",
+		},
+		{
+			name: "returns error for category without template",
+			contents: `{
+  "categories": [{
+    "name": "programming",
+    "subjects": ["Codigo simples"],
+    "verbs": ["reduz"],
+    "complements": ["problemas futuros"]
+  }]
+}`,
+			wantErr: "template cannot be empty",
+		},
+		{
+			name: "returns error for category with unknown template placeholder",
+			contents: `{
+  "categories": [{
+    "name": "programming",
+    "template": "{subject} {verb} {complement} {conclusion}",
+    "subjects": ["Codigo simples"],
+    "verbs": ["reduz"],
+    "complements": ["problemas futuros"]
+  }]
+}`,
+			wantErr: "unknown placeholder",
 		},
 	}
 
