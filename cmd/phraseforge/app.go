@@ -51,7 +51,7 @@ func runGenerate(args []string, out io.Writer, categories []phrase.Category) err
 
 	generatedPhrases := make([]string, 0, *count)
 	for range *count {
-		generated, err := phrase.Generate(category.Parts)
+		generated, err := phrase.Generate(category.Template, category.Parts)
 		if err != nil {
 			return fmt.Errorf("run generate command: %w", err)
 		}

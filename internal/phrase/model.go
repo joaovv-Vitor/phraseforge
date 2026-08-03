@@ -10,6 +10,7 @@ type Parts struct {
 
 // Category groups phrase parts under a name.
 type Category struct {
-	Name string `json:"name"`
+	Name     string `json:"name"`
+	Template string `json:"template"`
 	Parts
 }

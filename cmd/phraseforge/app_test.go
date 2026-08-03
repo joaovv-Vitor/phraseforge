@@ -114,7 +114,8 @@ func TestRun(t *testing.T) {
 func testCategories() []phrase.Category {
 	return []phrase.Category{
 		{
-			Name: "programming",
+			Name:     "programming",
+			Template: "{subject} {verb} {complement}",
 			Parts: phrase.Parts{
 				Subjects:    []string{"Codigo simples", "Um bom desenvolvedor"},
 				Verbs:       []string{"reduz", "simplifica"},
@@ -122,7 +123,8 @@ func testCategories() []phrase.Category {
 			},
 		},
 		{
-			Name: "study",
+			Name:     "study",
+			Template: "{subject} {verb} {complement}",
 			Parts: phrase.Parts{
 				Subjects:    []string{"A pratica constante", "A revisao diaria"},
 				Verbs:       []string{"fortalece", "melhora"},

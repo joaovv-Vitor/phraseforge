@@ -5,7 +5,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"os"
-	"strings"
 
 	"github.com/joaovv-Vitor/phraseforge/internal/phrase"
 )
@@ -40,17 +39,8 @@ func validateCategories(categories []phrase.Category) error {
 	}
 
 	for index, category := range categories {
-		if strings.TrimSpace(category.Name) == "" {
-			return fmt.Errorf("validate categories: category %d has an empty name", index+1)
-		}
-		if len(category.Subjects) == 0 {
-			return fmt.Errorf("validate categories: category %q has no subjects", category.Name)
-		}
-		if len(category.Verbs) == 0 {
-			return fmt.Errorf("validate categories: category %q has no verbs", category.Name)
-		}
-		if len(category.Complements) == 0 {
-			return fmt.Errorf("validate categories: category %q has no complements", category.Name)
+		if err := phrase.ValidateCategory(category); err != nil {
+			return fmt.Errorf("validate categories: category %d: %w", index+1, err)
 		}
 	}
 

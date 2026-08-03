@@ -10,7 +10,8 @@ func TestFindCategory(t *testing.T) {
 
 	categories := []Category{
 		{
-			Name: "programming",
+			Name:     "programming",
+			Template: "{subject} {verb} {complement}",
 			Parts: Parts{
 				Subjects:    []string{"Codigo simples"},
 				Verbs:       []string{"reduz"},
@@ -18,7 +19,8 @@ func TestFindCategory(t *testing.T) {
 			},
 		},
 		{
-			Name: "study",
+			Name:     "study",
+			Template: "{subject} {verb} {complement}",
 			Parts: Parts{
 				Subjects:    []string{"A revisao"},
 				Verbs:       []string{"fortalece"},
