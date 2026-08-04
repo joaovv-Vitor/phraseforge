@@ -11,7 +11,7 @@ func Generate(template string, parts Parts) (string, error) {
 	if err := validateTemplate(template); err != nil {
 		return "", fmt.Errorf("generate phrase: %w", err)
 	}
-	if err := validateParts(parts); err != nil {
+	if err := validateParts(template, parts); err != nil {
 		return "", fmt.Errorf("generate phrase: %w", err)
 	}
 
@@ -19,9 +19,19 @@ func Generate(template string, parts Parts) (string, error) {
 	verb := parts.Verbs[rand.IntN(len(parts.Verbs))]
 	complement := parts.Complements[rand.IntN(len(parts.Complements))]
 
-	return strings.NewReplacer(
+	replacements := []string{
 		"{subject}", subject,
 		"{verb}", verb,
 		"{complement}", complement,
-	).Replace(template) + ".", nil
+	}
+	if strings.Contains(template, "{introduction}") {
+		introduction := parts.Introductions[rand.IntN(len(parts.Introductions))]
+		replacements = append(replacements, "{introduction}", introduction)
+	}
+	if strings.Contains(template, "{conclusion}") {
+		conclusion := parts.Conclusions[rand.IntN(len(parts.Conclusions))]
+		replacements = append(replacements, "{conclusion}", conclusion)
+	}
+
+	return strings.NewReplacer(replacements...).Replace(template) + ".", nil
 }

@@ -36,6 +36,40 @@ func TestGenerate(t *testing.T) {
 			want: "Problemas futuros e o que codigo simples reduz.",
 		},
 		{
+			name:     "generates phrase with introduction",
+			template: "{introduction} {subject} {verb} {complement}",
+			parts: Parts{
+				Introductions: []string{"Com foco,"},
+				Subjects:      []string{"a pratica constante"},
+				Verbs:         []string{"fortalece"},
+				Complements:   []string{"o aprendizado"},
+			},
+			want: "Com foco, a pratica constante fortalece o aprendizado.",
+		},
+		{
+			name:     "generates phrase with conclusion",
+			template: "{subject} {verb} {complement}{conclusion}",
+			parts: Parts{
+				Subjects:    []string{"A pratica constante"},
+				Verbs:       []string{"fortalece"},
+				Complements: []string{"o aprendizado"},
+				Conclusions: []string{", passo a passo"},
+			},
+			want: "A pratica constante fortalece o aprendizado, passo a passo.",
+		},
+		{
+			name:     "generates phrase with introduction and conclusion",
+			template: "{introduction} {subject} {verb} {complement}{conclusion}",
+			parts: Parts{
+				Introductions: []string{"Com foco,"},
+				Subjects:      []string{"a pratica constante"},
+				Verbs:         []string{"fortalece"},
+				Complements:   []string{"o aprendizado"},
+				Conclusions:   []string{", passo a passo"},
+			},
+			want: "Com foco, a pratica constante fortalece o aprendizado, passo a passo.",
+		},
+		{
 			name:     "returns error when subjects are empty",
 			template: "{subject} {verb} {complement}",
 			parts: Parts{
@@ -69,7 +103,7 @@ func TestGenerate(t *testing.T) {
 		},
 		{
 			name:     "returns error for unknown placeholder",
-			template: "{subject} {verb} {complement} {conclusion}",
+			template: "{subject} {verb} {complement} {unknown}",
 			parts:    validParts(),
 			wantErr:  "unknown placeholder",
 		},
@@ -84,6 +118,24 @@ func TestGenerate(t *testing.T) {
 			template: "{subject} {subject} {verb} {complement}",
 			parts:    validParts(),
 			wantErr:  "{subject}",
+		},
+		{
+			name:     "returns error for repeated optional placeholder",
+			template: "{introduction} {introduction} {subject} {verb} {complement}",
+			parts:    validParts(),
+			wantErr:  "{introduction}",
+		},
+		{
+			name:     "returns error when introduction list is empty",
+			template: "{introduction} {subject} {verb} {complement}",
+			parts:    validParts(),
+			wantErr:  "introductions cannot be empty",
+		},
+		{
+			name:     "returns error when conclusion list is empty",
+			template: "{subject} {verb} {complement}{conclusion}",
+			parts:    validParts(),
+			wantErr:  "conclusions cannot be empty",
 		},
 	}
 

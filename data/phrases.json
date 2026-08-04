@@ -9,10 +9,12 @@
     },
     {
       "name": "study",
-      "template": "{subject} {verb} {complement}",
-      "subjects": ["A pratica constante", "A revisao diaria"],
+      "template": "{introduction} {subject} {verb} {complement}{conclusion}",
+      "introductions": ["Com foco,", "A cada dia,"],
+      "subjects": ["a pratica constante", "a revisao diaria"],
       "verbs": ["fortalece", "melhora"],
-      "complements": ["o aprendizado", "o raciocinio logico"]
+      "complements": ["o aprendizado", "o raciocinio logico"],
+      "conclusions": [", passo a passo", ", com consistencia"]
     }
   ]
 }

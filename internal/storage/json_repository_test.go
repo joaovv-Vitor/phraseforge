@@ -17,7 +17,7 @@ func TestLoadCategories(t *testing.T) {
 		wantErr  string
 	}{
 		{
-			name: "loads valid categories",
+			name: "loads valid categories with optional parts",
 			contents: `{
   "categories": [
     {
@@ -29,10 +29,12 @@ func TestLoadCategories(t *testing.T) {
     },
     {
       "name": "study",
-      "template": "{subject} {verb} {complement}",
+      "template": "{introduction} {subject} {verb} {complement}{conclusion}",
+      "introductions": ["Com foco,"],
       "subjects": ["A pratica constante"],
       "verbs": ["fortalece"],
-      "complements": ["o aprendizado"]
+      "complements": ["o aprendizado"],
+      "conclusions": [", passo a passo"]
     }
   ]
 }`,
@@ -112,11 +114,44 @@ func TestLoadCategories(t *testing.T) {
 			wantErr: "template cannot be empty",
 		},
 		{
+			name: "loads category without optional parts when template does not use them",
+			contents: `{
+  "categories": [{
+    "name": "programming",
+    "template": "{subject} {verb} {complement}",
+    "subjects": ["Codigo simples"],
+    "verbs": ["reduz"],
+    "complements": ["problemas futuros"]
+  }, {
+    "name": "study",
+    "template": "{subject} {verb} {complement}",
+    "subjects": ["A pratica constante"],
+    "verbs": ["fortalece"],
+    "complements": ["o aprendizado"]
+  }]
+}`,
+			wantName: "programming",
+		},
+		{
+			name: "returns error when template uses an empty introduction list",
+			contents: `{
+  "categories": [{
+    "name": "programming",
+    "template": "{introduction} {subject} {verb} {complement}",
+    "introductions": [],
+    "subjects": ["Codigo simples"],
+    "verbs": ["reduz"],
+    "complements": ["problemas futuros"]
+  }]
+}`,
+			wantErr: "introductions cannot be empty",
+		},
+		{
 			name: "returns error for category with unknown template placeholder",
 			contents: `{
   "categories": [{
     "name": "programming",
-    "template": "{subject} {verb} {complement} {conclusion}",
+    "template": "{subject} {verb} {complement} {unknown}",
     "subjects": ["Codigo simples"],
     "verbs": ["reduz"],
     "complements": ["problemas futuros"]

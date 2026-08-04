@@ -68,11 +68,18 @@ As categorias ficam em `data/phrases.json`:
 
 Cada categoria precisa ter nome, template e listas nao vazias de `subjects`, `verbs` e `complements`.
 
-O template deve conter exatamente uma ocorrencia de cada placeholder aceito:
+O template deve conter exatamente uma ocorrencia dos placeholders obrigatorios:
 
 - `{subject}`
 - `{verb}`
 - `{complement}`
+
+Os placeholders opcionais podem aparecer no maximo uma vez:
+
+- `{introduction}`
+- `{conclusion}`
+
+Quando um placeholder opcional e usado, sua lista correspondente no JSON deve conter ao menos um valor.
 
 ## Desenvolvimento
 
