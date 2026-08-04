@@ -13,7 +13,7 @@ func ValidateCategory(category Category) error {
 	if err := validateTemplate(category.Template); err != nil {
 		return fmt.Errorf("category %q: %w", category.Name, err)
 	}
-	if err := validateParts(category.Parts); err != nil {
+	if err := validateParts(category.Template, category.Parts); err != nil {
 		return fmt.Errorf("category %q: %w", category.Name, err)
 	}
 
@@ -32,6 +32,12 @@ func validateTemplate(template string) error {
 		}
 		remaining = strings.ReplaceAll(remaining, placeholder, "")
 	}
+	for _, placeholder := range []string{"{introduction}", "{conclusion}"} {
+		if strings.Count(template, placeholder) > 1 {
+			return fmt.Errorf("template can contain %q at most once", placeholder)
+		}
+		remaining = strings.ReplaceAll(remaining, placeholder, "")
+	}
 	if strings.ContainsAny(remaining, "{}") {
 		return fmt.Errorf("template contains an unknown placeholder")
 	}
@@ -39,7 +45,7 @@ func validateTemplate(template string) error {
 	return nil
 }
 
-func validateParts(parts Parts) error {
+func validateParts(template string, parts Parts) error {
 	if len(parts.Subjects) == 0 {
 		return fmt.Errorf("subjects cannot be empty")
 	}
@@ -48,6 +54,12 @@ func validateParts(parts Parts) error {
 	}
 	if len(parts.Complements) == 0 {
 		return fmt.Errorf("complements cannot be empty")
+	}
+	if strings.Contains(template, "{introduction}") && len(parts.Introductions) == 0 {
+		return fmt.Errorf("introductions cannot be empty when the template uses {introduction}")
+	}
+	if strings.Contains(template, "{conclusion}") && len(parts.Conclusions) == 0 {
+		return fmt.Errorf("conclusions cannot be empty when the template uses {conclusion}")
 	}
 
 	return nil
