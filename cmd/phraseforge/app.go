@@ -10,7 +10,7 @@ import (
 
 func run(args []string, out io.Writer, categories []phrase.Category) error {
 	if len(args) == 0 {
-		return fmt.Errorf("command is required: use generate or categories")
+		return fmt.Errorf("command is required: run phraseforge help")
 	}
 
 	switch args[0] {
@@ -23,9 +23,20 @@ func run(args []string, out io.Writer, categories []phrase.Category) error {
 			}
 		}
 		return nil
+	case "help":
+		return writeUsage(out)
 	default:
-		return fmt.Errorf("unknown command %q: use generate or categories", args[0])
+		return fmt.Errorf("unknown command %q: run phraseforge help", args[0])
 	}
+}
+
+func writeUsage(out io.Writer) error {
+	_, err := fmt.Fprint(out, `Usage:
+  phraseforge generate [--category NAME] [--count NUMBER]
+  phraseforge categories
+  phraseforge help
+`)
+	return err
 }
 
 func runGenerate(args []string, out io.Writer, categories []phrase.Category) error {
