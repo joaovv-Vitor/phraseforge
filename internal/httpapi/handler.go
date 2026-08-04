@@ -25,6 +25,10 @@ type randomPhrasesResponse struct {
 	Phrases  []string `json:"phrases"`
 }
 
+type errorResponse struct {
+	Error string `json:"error"`
+}
+
 // NewHandler returns the HTTP handler for the PhraseForge API.
 func NewHandler(categories []phrase.Category) http.Handler {
 	mux := http.NewServeMux()
@@ -35,6 +39,7 @@ func NewHandler(categories []phrase.Category) http.Handler {
 	mux.HandleFunc("/phrases/random", func(w http.ResponseWriter, r *http.Request) {
 		randomPhrase(w, r, categories)
 	})
+	mux.HandleFunc("/", notFound)
 
 	return mux
 }
@@ -42,15 +47,19 @@ func NewHandler(categories []phrase.Category) http.Handler {
 func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Category) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", http.MethodGet)
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		writeJSONError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 
 	categoryName := "programming"
 	categoryRequested := false
 	if values, provided := r.URL.Query()["category"]; provided {
-		if len(values) != 1 || strings.TrimSpace(values[0]) == "" {
-			http.Error(w, "category must be specified once and cannot be empty", http.StatusBadRequest)
+		if len(values) != 1 {
+			writeJSONError(w, http.StatusBadRequest, "category must be specified exactly once")
+			return
+		}
+		if strings.TrimSpace(values[0]) == "" {
+			writeJSONError(w, http.StatusBadRequest, "category cannot be empty")
 			return
 		}
 		categoryName = values[0]
@@ -59,14 +68,18 @@ func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Ca
 
 	count := 1
 	if values, provided := r.URL.Query()["count"]; provided {
-		if len(values) != 1 || strings.TrimSpace(values[0]) == "" {
-			http.Error(w, "count must be specified once and cannot be empty", http.StatusBadRequest)
+		if len(values) != 1 {
+			writeJSONError(w, http.StatusBadRequest, "count must be specified exactly once")
+			return
+		}
+		if strings.TrimSpace(values[0]) == "" {
+			writeJSONError(w, http.StatusBadRequest, "count cannot be empty")
 			return
 		}
 
 		parsedCount, err := strconv.Atoi(values[0])
 		if err != nil || parsedCount < 1 || parsedCount > maxRandomPhraseCount {
-			http.Error(w, "count must be a number between 1 and 10", http.StatusBadRequest)
+			writeJSONError(w, http.StatusBadRequest, "count must be a number between 1 and 10")
 			return
 		}
 		count = parsedCount
@@ -75,10 +88,10 @@ func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Ca
 	category, err := phrase.FindCategory(categories, categoryName)
 	if err != nil {
 		if !categoryRequested {
-			http.Error(w, "failed to generate phrase", http.StatusInternalServerError)
+			writeJSONError(w, http.StatusInternalServerError, "failed to generate phrase")
 			return
 		}
-		http.Error(w, "category not found", http.StatusNotFound)
+		writeJSONError(w, http.StatusNotFound, "category not found")
 		return
 	}
 
@@ -86,7 +99,7 @@ func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Ca
 	for range count {
 		generated, err := phrase.Generate(category.Template, category.Parts)
 		if err != nil {
-			http.Error(w, "failed to generate phrase", http.StatusInternalServerError)
+			writeJSONError(w, http.StatusInternalServerError, "failed to generate phrase")
 			return
 		}
 		phrases = append(phrases, generated)
@@ -104,7 +117,7 @@ func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Ca
 func listCategories(w http.ResponseWriter, r *http.Request, categories []phrase.Category) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", http.MethodGet)
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		writeJSONError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 
@@ -117,12 +130,24 @@ func listCategories(w http.ResponseWriter, r *http.Request, categories []phrase.
 func health(w http.ResponseWriter, r *http.Request) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", http.MethodGet)
-		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		writeJSONError(w, http.StatusMethodNotAllowed, "method not allowed")
 		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")
 	if err := json.NewEncoder(w).Encode(healthResponse{Status: "ok"}); err != nil {
+		return
+	}
+}
+
+func notFound(w http.ResponseWriter, _ *http.Request) {
+	writeJSONError(w, http.StatusNotFound, "not found")
+}
+
+func writeJSONError(w http.ResponseWriter, status int, message string) {
+	w.Header().Set("Content-Type", "application/json")
+	w.WriteHeader(status)
+	if err := json.NewEncoder(w).Encode(errorResponse{Error: message}); err != nil {
 		return
 	}
 }
