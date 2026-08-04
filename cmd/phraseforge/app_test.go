@@ -46,9 +46,13 @@ func TestRun(t *testing.T) {
 			name: "shows command usage",
 			args: []string{"help"},
 			want: "Usage:\n" +
-				"  phraseforge generate [--category NAME] [--count NUMBER]\n" +
-				"  phraseforge categories\n" +
-				"  phraseforge help\n",
+				"  phraseforge [--data-file PATH] <command>\n\n" +
+				"Commands:\n" +
+				"  generate [--category NAME] [--count NUMBER]\n" +
+				"  categories\n" +
+				"  help\n\n" +
+				"Global options:\n" +
+				"  --data-file PATH  Path to the categories JSON file (default: data/phrases.json)\n",
 		},
 		{
 			name:    "returns error without command",
