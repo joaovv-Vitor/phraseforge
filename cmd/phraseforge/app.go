@@ -32,9 +32,15 @@ func run(args []string, out io.Writer, categories []phrase.Category) error {
 
 func writeUsage(out io.Writer) error {
 	_, err := fmt.Fprint(out, `Usage:
-  phraseforge generate [--category NAME] [--count NUMBER]
-  phraseforge categories
-  phraseforge help
+  phraseforge [--data-file PATH] <command>
+
+Commands:
+  generate [--category NAME] [--count NUMBER]
+  categories
+  help
+
+Global options:
+  --data-file PATH  Path to the categories JSON file (default: data/phrases.json)
 `)
 	return err
 }

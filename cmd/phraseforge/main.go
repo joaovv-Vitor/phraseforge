@@ -8,13 +8,19 @@ import (
 )
 
 func main() {
-	categories, err := storage.LoadCategories("data/phrases.json")
+	config, args, err := parseConfig(os.Args[1:])
 	if err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}
 
-	if err := run(os.Args[1:], os.Stdout, categories); err != nil {
+	categories, err := storage.LoadCategories(config.dataFile)
+	if err != nil {
+		fmt.Fprintln(os.Stderr, err)
+		os.Exit(1)
+	}
+
+	if err := run(args, os.Stdout, categories); err != nil {
 		fmt.Fprintln(os.Stderr, err)
 		os.Exit(1)
 	}

@@ -10,13 +10,25 @@ As frases sao formadas a partir de um template e de partes como sujeito, verbo e
 
 ## Executar
 
-Execute os comandos a partir da raiz do repositorio, pois o arquivo de dados usa o caminho relativo `data/phrases.json`.
+Execute os comandos a partir da raiz do repositorio. Por padrao, a aplicacao usa o caminho relativo `data/phrases.json`.
 
 ```bash
 go run ./cmd/phraseforge help
 ```
 
 ## Comandos
+
+Formato geral:
+
+```bash
+phraseforge [--data-file PATH] <command>
+```
+
+Para usar outro arquivo JSON, informe a flag global antes do comando:
+
+```bash
+go run ./cmd/phraseforge --data-file outro-arquivo.json categories
+```
 
 Gerar uma frase usando a categoria padrao, `programming`:
 
