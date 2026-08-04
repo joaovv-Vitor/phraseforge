@@ -43,13 +43,21 @@ func TestRun(t *testing.T) {
 			want: "programming\nstudy\n",
 		},
 		{
+			name: "shows command usage",
+			args: []string{"help"},
+			want: "Usage:\n" +
+				"  phraseforge generate [--category NAME] [--count NUMBER]\n" +
+				"  phraseforge categories\n" +
+				"  phraseforge help\n",
+		},
+		{
 			name:    "returns error without command",
-			wantErr: "command is required",
+			wantErr: "phraseforge help",
 		},
 		{
 			name:    "returns error for unknown command",
 			args:    []string{"invalid"},
-			wantErr: "unknown command \"invalid\"",
+			wantErr: "phraseforge help",
 		},
 		{
 			name:    "returns error for unknown category",
