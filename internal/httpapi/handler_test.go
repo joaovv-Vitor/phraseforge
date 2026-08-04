@@ -22,7 +22,7 @@ func TestHandler(t *testing.T) {
 		wantJSON     bool
 		wantNames    []string
 		wantCategory string
-		wantPhrase   string
+		wantPhrases  []string
 	}{
 		{
 			name:         "returns a random programming phrase",
@@ -31,16 +31,69 @@ func TestHandler(t *testing.T) {
 			wantStatus:   http.StatusOK,
 			wantJSON:     true,
 			wantCategory: "programming",
-			wantPhrase:   "Codigo simples reduz problemas futuros.",
+			wantPhrases:  []string{"Codigo simples reduz problemas futuros."},
+		},
+		{
+			name:         "returns multiple random programming phrases",
+			method:       http.MethodGet,
+			path:         "/phrases/random?count=3",
+			wantStatus:   http.StatusOK,
+			wantJSON:     true,
+			wantCategory: "programming",
+			wantPhrases: []string{
+				"Codigo simples reduz problemas futuros.",
+				"Codigo simples reduz problemas futuros.",
+				"Codigo simples reduz problemas futuros.",
+			},
 		},
 		{
 			name:         "returns a random phrase from selected category",
 			method:       http.MethodGet,
-			path:         "/phrases/random?category=study",
+			path:         "/phrases/random?category=study&count=3",
 			wantStatus:   http.StatusOK,
 			wantJSON:     true,
 			wantCategory: "study",
-			wantPhrase:   "A pratica constante fortalece o aprendizado.",
+			wantPhrases: []string{
+				"A pratica constante fortalece o aprendizado.",
+				"A pratica constante fortalece o aprendizado.",
+				"A pratica constante fortalece o aprendizado.",
+			},
+		},
+		{
+			name:       "returns bad request for empty count",
+			method:     http.MethodGet,
+			path:       "/phrases/random?count=",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "returns bad request for invalid count",
+			method:     http.MethodGet,
+			path:       "/phrases/random?count=invalid",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "returns bad request for zero count",
+			method:     http.MethodGet,
+			path:       "/phrases/random?count=0",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "returns bad request for negative count",
+			method:     http.MethodGet,
+			path:       "/phrases/random?count=-1",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "returns bad request for count above limit",
+			method:     http.MethodGet,
+			path:       "/phrases/random?count=11",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "returns bad request for repeated count",
+			method:     http.MethodGet,
+			path:       "/phrases/random?count=2&count=3",
+			wantStatus: http.StatusBadRequest,
 		},
 		{
 			name:       "returns bad request for empty category",
@@ -124,15 +177,15 @@ func TestHandler(t *testing.T) {
 				}
 				return
 			case "/phrases/random":
-				var response randomPhraseResponse
+				var response randomPhrasesResponse
 				if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
 					t.Fatalf("decode response: %v", err)
 				}
 				if response.Category != tt.wantCategory {
 					t.Errorf("category body = %q, want %q", response.Category, tt.wantCategory)
 				}
-				if response.Phrase != tt.wantPhrase {
-					t.Errorf("phrase body = %q, want %q", response.Phrase, tt.wantPhrase)
+				if !reflect.DeepEqual(response.Phrases, tt.wantPhrases) {
+					t.Errorf("phrases body = %#v, want %#v", response.Phrases, tt.wantPhrases)
 				}
 				return
 			}

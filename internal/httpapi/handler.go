@@ -4,6 +4,7 @@ package httpapi
 import (
 	"encoding/json"
 	"net/http"
+	"strconv"
 	"strings"
 
 	"github.com/joaovv-Vitor/phraseforge/internal/phrase"
@@ -17,9 +18,11 @@ type categoriesResponse struct {
 	Categories []string `json:"categories"`
 }
 
-type randomPhraseResponse struct {
-	Category string `json:"category"`
-	Phrase   string `json:"phrase"`
+const maxRandomPhraseCount = 10
+
+type randomPhrasesResponse struct {
+	Category string   `json:"category"`
+	Phrases  []string `json:"phrases"`
 }
 
 // NewHandler returns the HTTP handler for the PhraseForge API.
@@ -54,6 +57,21 @@ func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Ca
 		categoryRequested = true
 	}
 
+	count := 1
+	if values, provided := r.URL.Query()["count"]; provided {
+		if len(values) != 1 || strings.TrimSpace(values[0]) == "" {
+			http.Error(w, "count must be specified once and cannot be empty", http.StatusBadRequest)
+			return
+		}
+
+		parsedCount, err := strconv.Atoi(values[0])
+		if err != nil || parsedCount < 1 || parsedCount > maxRandomPhraseCount {
+			http.Error(w, "count must be a number between 1 and 10", http.StatusBadRequest)
+			return
+		}
+		count = parsedCount
+	}
+
 	category, err := phrase.FindCategory(categories, categoryName)
 	if err != nil {
 		if !categoryRequested {
@@ -64,16 +82,20 @@ func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Ca
 		return
 	}
 
-	generated, err := phrase.Generate(category.Template, category.Parts)
-	if err != nil {
-		http.Error(w, "failed to generate phrase", http.StatusInternalServerError)
-		return
+	phrases := make([]string, 0, count)
+	for range count {
+		generated, err := phrase.Generate(category.Template, category.Parts)
+		if err != nil {
+			http.Error(w, "failed to generate phrase", http.StatusInternalServerError)
+			return
+		}
+		phrases = append(phrases, generated)
 	}
 
 	w.Header().Set("Content-Type", "application/json")
-	if err := json.NewEncoder(w).Encode(randomPhraseResponse{
+	if err := json.NewEncoder(w).Encode(randomPhrasesResponse{
 		Category: category.Name,
-		Phrase:   generated,
+		Phrases:  phrases,
 	}); err != nil {
 		return
 	}
