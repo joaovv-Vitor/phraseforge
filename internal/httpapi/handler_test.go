@@ -21,7 +21,22 @@ func TestHandler(t *testing.T) {
 		wantStatus int
 		wantJSON   bool
 		wantNames  []string
+		wantPhrase string
 	}{
+		{
+			name:       "returns a random programming phrase",
+			method:     http.MethodGet,
+			path:       "/phrases/random",
+			wantStatus: http.StatusOK,
+			wantJSON:   true,
+			wantPhrase: "Codigo simples reduz problemas futuros.",
+		},
+		{
+			name:       "rejects unsupported random phrase method",
+			method:     http.MethodPost,
+			path:       "/phrases/random",
+			wantStatus: http.StatusMethodNotAllowed,
+		},
 		{
 			name:       "returns categories in configured order",
 			method:     http.MethodGet,
@@ -75,13 +90,26 @@ func TestHandler(t *testing.T) {
 				t.Fatalf("Content-Type = %q, want application/json", contentType)
 			}
 
-			if tt.path == "/health" {
+			switch tt.path {
+			case "/health":
 				var response healthResponse
 				if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
 					t.Fatalf("decode response: %v", err)
 				}
 				if response.Status != "ok" {
 					t.Errorf("status body = %q, want %q", response.Status, "ok")
+				}
+				return
+			case "/phrases/random":
+				var response randomPhraseResponse
+				if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
+					t.Fatalf("decode response: %v", err)
+				}
+				if response.Category != "programming" {
+					t.Errorf("category body = %q, want %q", response.Category, "programming")
+				}
+				if response.Phrase != tt.wantPhrase {
+					t.Errorf("phrase body = %q, want %q", response.Phrase, tt.wantPhrase)
 				}
 				return
 			}
@@ -97,9 +125,37 @@ func TestHandler(t *testing.T) {
 	}
 }
 
+func TestRandomPhraseWithoutProgrammingCategory(t *testing.T) {
+	handler := NewHandler([]phrase.Category{{Name: "study"}})
+	request := httptest.NewRequest(http.MethodGet, "/phrases/random", nil)
+	recorder := httptest.NewRecorder()
+
+	handler.ServeHTTP(recorder, request)
+
+	if recorder.Code != http.StatusInternalServerError {
+		t.Errorf("status = %d, want %d", recorder.Code, http.StatusInternalServerError)
+	}
+}
+
 func testCategories() []phrase.Category {
 	return []phrase.Category{
-		{Name: "programming"},
-		{Name: "study"},
+		{
+			Name:     "programming",
+			Template: "{subject} {verb} {complement}",
+			Parts: phrase.Parts{
+				Subjects:    []string{"Codigo simples"},
+				Verbs:       []string{"reduz"},
+				Complements: []string{"problemas futuros"},
+			},
+		},
+		{
+			Name:     "study",
+			Template: "{subject} {verb} {complement}",
+			Parts: phrase.Parts{
+				Subjects:    []string{"A pratica constante"},
+				Verbs:       []string{"fortalece"},
+				Complements: []string{"o aprendizado"},
+			},
+		},
 	}
 }
