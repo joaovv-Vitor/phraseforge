@@ -23,6 +23,8 @@ func TestHandler(t *testing.T) {
 		wantNames    []string
 		wantCategory string
 		wantPhrases  []string
+		wantError    string
+		wantAllow    bool
 	}{
 		{
 			name:         "returns a random programming phrase",
@@ -64,54 +66,64 @@ func TestHandler(t *testing.T) {
 			method:     http.MethodGet,
 			path:       "/phrases/random?count=",
 			wantStatus: http.StatusBadRequest,
+			wantError:  "count cannot be empty",
 		},
 		{
 			name:       "returns bad request for invalid count",
 			method:     http.MethodGet,
 			path:       "/phrases/random?count=invalid",
 			wantStatus: http.StatusBadRequest,
+			wantError:  "count must be a number between 1 and 10",
 		},
 		{
 			name:       "returns bad request for zero count",
 			method:     http.MethodGet,
 			path:       "/phrases/random?count=0",
 			wantStatus: http.StatusBadRequest,
+			wantError:  "count must be a number between 1 and 10",
 		},
 		{
 			name:       "returns bad request for negative count",
 			method:     http.MethodGet,
 			path:       "/phrases/random?count=-1",
 			wantStatus: http.StatusBadRequest,
+			wantError:  "count must be a number between 1 and 10",
 		},
 		{
 			name:       "returns bad request for count above limit",
 			method:     http.MethodGet,
 			path:       "/phrases/random?count=11",
 			wantStatus: http.StatusBadRequest,
+			wantError:  "count must be a number between 1 and 10",
 		},
 		{
 			name:       "returns bad request for repeated count",
 			method:     http.MethodGet,
 			path:       "/phrases/random?count=2&count=3",
 			wantStatus: http.StatusBadRequest,
+			wantError:  "count must be specified exactly once",
 		},
 		{
 			name:       "returns bad request for empty category",
 			method:     http.MethodGet,
 			path:       "/phrases/random?category=",
 			wantStatus: http.StatusBadRequest,
+			wantError:  "category cannot be empty",
 		},
 		{
 			name:       "returns not found for unknown category",
 			method:     http.MethodGet,
 			path:       "/phrases/random?category=unknown",
 			wantStatus: http.StatusNotFound,
+			wantError:  "category not found",
 		},
 		{
 			name:       "rejects unsupported random phrase method",
 			method:     http.MethodPost,
 			path:       "/phrases/random",
 			wantStatus: http.StatusMethodNotAllowed,
+			wantError:  "method not allowed",
+			wantAllow:  true,
 		},
 		{
 			name:       "returns categories in configured order",
@@ -126,6 +138,8 @@ func TestHandler(t *testing.T) {
 			method:     http.MethodPost,
 			path:       "/categories",
 			wantStatus: http.StatusMethodNotAllowed,
+			wantError:  "method not allowed",
+			wantAllow:  true,
 		},
 		{
 			name:       "returns health status",
@@ -139,12 +153,15 @@ func TestHandler(t *testing.T) {
 			method:     http.MethodPost,
 			path:       "/health",
 			wantStatus: http.StatusMethodNotAllowed,
+			wantError:  "method not allowed",
+			wantAllow:  true,
 		},
 		{
 			name:       "returns not found for unknown route",
 			method:     http.MethodGet,
 			path:       "/unknown",
 			wantStatus: http.StatusNotFound,
+			wantError:  "not found",
 		},
 	}
 
@@ -158,6 +175,23 @@ func TestHandler(t *testing.T) {
 
 			if recorder.Code != tt.wantStatus {
 				t.Fatalf("status = %d, want %d", recorder.Code, tt.wantStatus)
+			}
+			if tt.wantError != "" {
+				if contentType := recorder.Header().Get("Content-Type"); !strings.HasPrefix(contentType, "application/json") {
+					t.Fatalf("Content-Type = %q, want application/json", contentType)
+				}
+				if tt.wantAllow && recorder.Header().Get("Allow") != http.MethodGet {
+					t.Errorf("Allow = %q, want %q", recorder.Header().Get("Allow"), http.MethodGet)
+				}
+
+				var response errorResponse
+				if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
+					t.Fatalf("decode error response: %v", err)
+				}
+				if response.Error != tt.wantError {
+					t.Errorf("error body = %q, want %q", response.Error, tt.wantError)
+				}
+				return
 			}
 			if !tt.wantJSON {
 				return
@@ -210,6 +244,17 @@ func TestRandomPhraseWithoutProgrammingCategory(t *testing.T) {
 
 	if recorder.Code != http.StatusInternalServerError {
 		t.Errorf("status = %d, want %d", recorder.Code, http.StatusInternalServerError)
+	}
+	if contentType := recorder.Header().Get("Content-Type"); !strings.HasPrefix(contentType, "application/json") {
+		t.Fatalf("Content-Type = %q, want application/json", contentType)
+	}
+
+	var response errorResponse
+	if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
+		t.Fatalf("decode error response: %v", err)
+	}
+	if response.Error != "failed to generate phrase" {
+		t.Errorf("error body = %q, want %q", response.Error, "failed to generate phrase")
 	}
 }
 
