@@ -16,6 +16,11 @@ type categoriesResponse struct {
 	Categories []string `json:"categories"`
 }
 
+type randomPhraseResponse struct {
+	Category string `json:"category"`
+	Phrase   string `json:"phrase"`
+}
+
 // NewHandler returns the HTTP handler for the PhraseForge API.
 func NewHandler(categories []phrase.Category) http.Handler {
 	mux := http.NewServeMux()
@@ -23,8 +28,39 @@ func NewHandler(categories []phrase.Category) http.Handler {
 	mux.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request) {
 		listCategories(w, r, categories)
 	})
+	mux.HandleFunc("/phrases/random", func(w http.ResponseWriter, r *http.Request) {
+		randomPhrase(w, r, categories)
+	})
 
 	return mux
+}
+
+func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Category) {
+	if r.Method != http.MethodGet {
+		w.Header().Set("Allow", http.MethodGet)
+		http.Error(w, "method not allowed", http.StatusMethodNotAllowed)
+		return
+	}
+
+	category, err := phrase.FindCategory(categories, "programming")
+	if err != nil {
+		http.Error(w, "failed to generate phrase", http.StatusInternalServerError)
+		return
+	}
+
+	generated, err := phrase.Generate(category.Template, category.Parts)
+	if err != nil {
+		http.Error(w, "failed to generate phrase", http.StatusInternalServerError)
+		return
+	}
+
+	w.Header().Set("Content-Type", "application/json")
+	if err := json.NewEncoder(w).Encode(randomPhraseResponse{
+		Category: category.Name,
+		Phrase:   generated,
+	}); err != nil {
+		return
+	}
 }
 
 func listCategories(w http.ResponseWriter, r *http.Request, categories []phrase.Category) {
