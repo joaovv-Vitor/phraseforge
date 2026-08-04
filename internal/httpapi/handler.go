@@ -4,6 +4,7 @@ package httpapi
 import (
 	"encoding/json"
 	"net/http"
+	"strings"
 
 	"github.com/joaovv-Vitor/phraseforge/internal/phrase"
 )
@@ -42,9 +43,24 @@ func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Ca
 		return
 	}
 
-	category, err := phrase.FindCategory(categories, "programming")
+	categoryName := "programming"
+	categoryRequested := false
+	if values, provided := r.URL.Query()["category"]; provided {
+		if len(values) != 1 || strings.TrimSpace(values[0]) == "" {
+			http.Error(w, "category must be specified once and cannot be empty", http.StatusBadRequest)
+			return
+		}
+		categoryName = values[0]
+		categoryRequested = true
+	}
+
+	category, err := phrase.FindCategory(categories, categoryName)
 	if err != nil {
-		http.Error(w, "failed to generate phrase", http.StatusInternalServerError)
+		if !categoryRequested {
+			http.Error(w, "failed to generate phrase", http.StatusInternalServerError)
+			return
+		}
+		http.Error(w, "category not found", http.StatusNotFound)
 		return
 	}
 

@@ -15,21 +15,44 @@ func TestHandler(t *testing.T) {
 	t.Parallel()
 
 	tests := []struct {
-		name       string
-		method     string
-		path       string
-		wantStatus int
-		wantJSON   bool
-		wantNames  []string
-		wantPhrase string
+		name         string
+		method       string
+		path         string
+		wantStatus   int
+		wantJSON     bool
+		wantNames    []string
+		wantCategory string
+		wantPhrase   string
 	}{
 		{
-			name:       "returns a random programming phrase",
+			name:         "returns a random programming phrase",
+			method:       http.MethodGet,
+			path:         "/phrases/random",
+			wantStatus:   http.StatusOK,
+			wantJSON:     true,
+			wantCategory: "programming",
+			wantPhrase:   "Codigo simples reduz problemas futuros.",
+		},
+		{
+			name:         "returns a random phrase from selected category",
+			method:       http.MethodGet,
+			path:         "/phrases/random?category=study",
+			wantStatus:   http.StatusOK,
+			wantJSON:     true,
+			wantCategory: "study",
+			wantPhrase:   "A pratica constante fortalece o aprendizado.",
+		},
+		{
+			name:       "returns bad request for empty category",
 			method:     http.MethodGet,
-			path:       "/phrases/random",
-			wantStatus: http.StatusOK,
-			wantJSON:   true,
-			wantPhrase: "Codigo simples reduz problemas futuros.",
+			path:       "/phrases/random?category=",
+			wantStatus: http.StatusBadRequest,
+		},
+		{
+			name:       "returns not found for unknown category",
+			method:     http.MethodGet,
+			path:       "/phrases/random?category=unknown",
+			wantStatus: http.StatusNotFound,
 		},
 		{
 			name:       "rejects unsupported random phrase method",
@@ -90,7 +113,7 @@ func TestHandler(t *testing.T) {
 				t.Fatalf("Content-Type = %q, want application/json", contentType)
 			}
 
-			switch tt.path {
+			switch request.URL.Path {
 			case "/health":
 				var response healthResponse
 				if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
@@ -105,8 +128,8 @@ func TestHandler(t *testing.T) {
 				if err := json.NewDecoder(recorder.Body).Decode(&response); err != nil {
 					t.Fatalf("decode response: %v", err)
 				}
-				if response.Category != "programming" {
-					t.Errorf("category body = %q, want %q", response.Category, "programming")
+				if response.Category != tt.wantCategory {
+					t.Errorf("category body = %q, want %q", response.Category, tt.wantCategory)
 				}
 				if response.Phrase != tt.wantPhrase {
 					t.Errorf("phrase body = %q, want %q", response.Phrase, tt.wantPhrase)
