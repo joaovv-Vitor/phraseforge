@@ -16,7 +16,7 @@ import (
 )
 
 func main() {
-	categories, err := storage.LoadCategories("data/phrases.json")
+	categories, err := storage.LoadCategories(apiDataFile())
 	if err != nil {
 		log.Fatal(err)
 	}
