@@ -8,6 +8,8 @@
 - Configuracao por flags e variaveis de ambiente.
 - Timeouts, graceful shutdown e respostas de erro JSON.
 - Imagem Docker para a API.
+- Schema SQLite inicial com migrations `up` e `down`.
+- Conexao SQLite com `database/sql` e chaves estrangeiras habilitadas.
 
 ## Persistencia Atual
 
@@ -21,11 +23,10 @@ Motivos:
 
 ### Proximas Etapas
 
-1. Criar e validar o schema SQLite inicial.
-2. Conectar a aplicacao com `database/sql`.
-3. Implementar repositorio SQLite para listar categorias.
-4. Migrar o carregamento da API de JSON para SQLite.
-5. Persistir templates, partes, favoritos e historico de geracao.
+1. Criar um runner de migrations SQLite em Go.
+2. Implementar repositorio SQLite para listar categorias.
+3. Migrar o carregamento da API de JSON para SQLite.
+4. Persistir templates, partes, favoritos e historico de geracao.
 
 ## Evolucoes Futuras
 
