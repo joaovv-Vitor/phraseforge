@@ -4,6 +4,8 @@ PhraseForge e uma aplicacao de terminal escrita em Go que gera frases aleatorias
 
 As frases sao formadas a partir de um template e de partes como sujeito, verbo e complemento. Os dados sao carregados de um arquivo JSON.
 
+Veja o [roadmap do projeto](ROADMAP.md) para as proximas fases e a decisao de persistencia.
+
 ## Requisitos
 
 - Go 1.26.5 ou compativel
