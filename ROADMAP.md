@@ -11,6 +11,7 @@
 - Schema SQLite inicial com migrations `up` e `down`.
 - Conexao SQLite com `database/sql` e chaves estrangeiras habilitadas.
 - Runner Go para aplicar migrations SQLite embutidas.
+- Repositorio SQLite para listar categorias em ordem alfabetica.
 
 ## Persistencia Atual
 
@@ -24,9 +25,8 @@ Motivos:
 
 ### Proximas Etapas
 
-1. Implementar repositorio SQLite para listar categorias.
-2. Migrar o carregamento da API de JSON para SQLite.
-3. Persistir templates, partes, favoritos e historico de geracao.
+1. Migrar o carregamento da API de JSON para SQLite.
+2. Persistir templates, partes, favoritos e historico de geracao.
 
 ## Evolucoes Futuras
 
