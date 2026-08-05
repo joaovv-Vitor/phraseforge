@@ -10,6 +10,7 @@
 - Imagem Docker para a API.
 - Schema SQLite inicial com migrations `up` e `down`.
 - Conexao SQLite com `database/sql` e chaves estrangeiras habilitadas.
+- Runner Go para aplicar migrations SQLite embutidas.
 
 ## Persistencia Atual
 
@@ -23,15 +24,13 @@ Motivos:
 
 ### Proximas Etapas
 
-1. Criar um runner de migrations SQLite em Go.
-2. Implementar repositorio SQLite para listar categorias.
-3. Migrar o carregamento da API de JSON para SQLite.
-4. Persistir templates, partes, favoritos e historico de geracao.
+1. Implementar repositorio SQLite para listar categorias.
+2. Migrar o carregamento da API de JSON para SQLite.
+3. Persistir templates, partes, favoritos e historico de geracao.
 
 ## Evolucoes Futuras
 
 - Avaliar PostgreSQL quando SQLite deixar de atender aos requisitos operacionais.
-- Adicionar migrations automatizadas.
 - Adicionar logs estruturados, CI e metricas.
 - Avaliar concorrencia para lotes maiores somente apos medir beneficio.
 - Avaliar arquitetura distribuida somente se o monolito apresentar um problema concreto que a separacao resolva.
