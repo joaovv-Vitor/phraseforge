@@ -1,8 +1,6 @@
 -- Enable this for every SQLite connection in the application:
 -- PRAGMA foreign_keys = ON;
 
-BEGIN;
-
 CREATE TABLE categories (
     id INTEGER PRIMARY KEY,
     name TEXT NOT NULL UNIQUE CHECK (length(trim(name)) > 0),
@@ -34,5 +32,3 @@ CREATE TABLE phrase_parts (
 CREATE INDEX idx_phrase_templates_category_id ON phrase_templates(category_id);
 CREATE INDEX idx_phrase_parts_category_id ON phrase_parts(category_id);
 CREATE INDEX idx_phrase_parts_category_kind ON phrase_parts(category_id, kind);
-
-COMMIT;
