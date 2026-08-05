@@ -60,6 +60,113 @@ Exibir ajuda:
 go run ./cmd/phraseforge help
 ```
 
+## API HTTP
+
+Inicie a API a partir da raiz do repositorio:
+
+```bash
+go run ./cmd/phraseforge-api
+```
+
+Por padrao, ela fica disponivel em `http://localhost:8080`. Use `Ctrl+C` para encerrar o servidor de forma controlada.
+
+### Configuracao
+
+Variaveis de ambiente disponiveis:
+
+- `PHRASEFORGE_API_ADDR`: endereco em que a API escuta. O padrao e `:8080`.
+- `PHRASEFORGE_DATA_FILE`: caminho do arquivo JSON de categorias. O padrao e `data/phrases.json`.
+
+Exemplo com configuracao customizada:
+
+```bash
+PHRASEFORGE_API_ADDR=:9090 \
+PHRASEFORGE_DATA_FILE=data/phrases.json \
+go run ./cmd/phraseforge-api
+```
+
+### Rotas
+
+Health check:
+
+```bash
+curl http://localhost:8080/health
+```
+
+```json
+{"status":"ok"}
+```
+
+Listar categorias:
+
+```bash
+curl http://localhost:8080/categories
+```
+
+```json
+{"categories":["programming","study"]}
+```
+
+Gerar uma frase da categoria padrao, `programming`:
+
+```bash
+curl http://localhost:8080/phrases/random
+```
+
+```json
+{
+  "category": "programming",
+  "phrases": [
+    "Codigo simples reduz problemas futuros."
+  ]
+}
+```
+
+Gerar frases de uma categoria especifica:
+
+```bash
+curl 'http://localhost:8080/phrases/random?category=study'
+```
+
+Gerar varias frases:
+
+```bash
+curl 'http://localhost:8080/phrases/random?category=study&count=3'
+```
+
+```json
+{
+  "category": "study",
+  "phrases": [
+    "Com foco, a pratica constante fortalece o aprendizado, passo a passo.",
+    "A cada dia, a revisao diaria melhora o raciocinio logico, com consistencia.",
+    "Com foco, a revisao diaria melhora o aprendizado, passo a passo."
+  ]
+}
+```
+
+### Parametros
+
+`GET /phrases/random` aceita os seguintes query parameters:
+
+- `category`: opcional. Sem o parametro, a API usa `programming`. Valor vazio retorna `400`; categoria inexistente retorna `404`.
+- `count`: opcional. O padrao e `1`; informe um inteiro entre `1` e `10`. Valores vazios, repetidos ou fora desse intervalo retornam `400`.
+
+### Erros
+
+Erros da API usam JSON:
+
+```json
+{"error":"category not found"}
+```
+
+Status mais comuns:
+
+- `400 Bad Request`: parametro invalido.
+- `404 Not Found`: rota ou categoria inexistente.
+- `405 Method Not Allowed`: metodo HTTP nao suportado. A resposta inclui `Allow: GET`.
+- `500 Internal Server Error`: estado interno inconsistente ou falha inesperada de geracao.
+
 ## Dados
 
 As categorias ficam em `data/phrases.json`:
