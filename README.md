@@ -167,6 +167,45 @@ Status mais comuns:
 - `405 Method Not Allowed`: metodo HTTP nao suportado. A resposta inclui `Allow: GET`.
 - `500 Internal Server Error`: estado interno inconsistente ou falha inesperada de geracao.
 
+## Docker
+
+Crie a imagem da API:
+
+```bash
+docker build -t phraseforge-api .
+```
+
+Execute a API na porta padrao:
+
+```bash
+docker run --rm -p 8080:8080 phraseforge-api
+```
+
+Em outro terminal, verifique o health check:
+
+```bash
+curl http://localhost:8080/health
+```
+
+Para configurar outro endereco dentro do container:
+
+```bash
+docker run --rm \
+  -p 9090:9090 \
+  -e PHRASEFORGE_API_ADDR=:9090 \
+  phraseforge-api
+```
+
+O container inclui `data/phrases.json`. Para usar outro arquivo, monte um volume e configure `PHRASEFORGE_DATA_FILE`:
+
+```bash
+docker run --rm \
+  -p 8080:8080 \
+  -v "$(pwd)/data/custom-phrases.json:/app/data/custom-phrases.json:ro" \
+  -e PHRASEFORGE_DATA_FILE=/app/data/custom-phrases.json \
+  phraseforge-api
+```
+
 ## Dados
 
 As categorias ficam em `data/phrases.json`:
