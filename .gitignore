@@ -27,6 +27,11 @@ go.work.sum
 # env file
 .env
 
+# Generated SQLite database files
+data/phraseforge.db
+data/phraseforge.db-shm
+data/phraseforge.db-wal
+
 # Editor/IDE
 # .idea/
 # .vscode/
