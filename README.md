@@ -1,8 +1,8 @@
 # PhraseForge
 
-PhraseForge e uma aplicacao de terminal escrita em Go que gera frases aleatorias por categoria.
+PhraseForge e uma aplicacao escrita em Go que gera frases aleatorias por categoria, pela linha de comando e por uma API HTTP.
 
-As frases sao formadas a partir de um template e de partes como sujeito, verbo e complemento. Os dados sao carregados de um arquivo JSON.
+As frases sao formadas a partir de um template e de partes como sujeito, verbo e complemento. A CLI le os dados de um arquivo JSON; a API le categorias ja preparadas em um banco SQLite.
 
 Veja o [roadmap do projeto](ROADMAP.md) para as proximas fases e a decisao de persistencia.
 
@@ -64,7 +64,13 @@ go run ./cmd/phraseforge help
 
 ## API HTTP
 
-Inicie a API a partir da raiz do repositorio:
+Antes de iniciar a API, prepare o banco SQLite com as migrations e os dados JSON:
+
+```bash
+go run ./cmd/phraseforge-db
+```
+
+Em seguida, inicie a API a partir da raiz do repositorio:
 
 ```bash
 go run ./cmd/phraseforge-api
@@ -77,13 +83,13 @@ Por padrao, ela fica disponivel em `http://localhost:8080`. Use `Ctrl+C` para en
 Variaveis de ambiente disponiveis:
 
 - `PHRASEFORGE_API_ADDR`: endereco em que a API escuta. O padrao e `:8080`.
-- `PHRASEFORGE_DATA_FILE`: caminho do arquivo JSON de categorias. O padrao e `data/phrases.json`.
+- `PHRASEFORGE_DATABASE_FILE`: caminho do banco SQLite preparado. O padrao e `data/phraseforge.db`.
 
 Exemplo com configuracao customizada:
 
 ```bash
 PHRASEFORGE_API_ADDR=:9090 \
-PHRASEFORGE_DATA_FILE=data/phrases.json \
+PHRASEFORGE_DATABASE_FILE=data/custom-phraseforge.db \
 go run ./cmd/phraseforge-api
 ```
 

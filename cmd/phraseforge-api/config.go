@@ -6,8 +6,8 @@ import (
 )
 
 const (
-	defaultAPIAddress = ":8080"
-	defaultDataFile   = "data/phrases.json"
+	defaultAPIAddress   = ":8080"
+	defaultDatabaseFile = "data/phraseforge.db"
 )
 
 func apiAddress() string {
@@ -19,10 +19,10 @@ func apiAddress() string {
 	return address
 }
 
-func apiDataFile() string {
-	path := strings.TrimSpace(os.Getenv("PHRASEFORGE_DATA_FILE"))
+func apiDatabaseFile() string {
+	path := strings.TrimSpace(os.Getenv("PHRASEFORGE_DATABASE_FILE"))
 	if path == "" {
-		return defaultDataFile
+		return defaultDatabaseFile
 	}
 
 	return path

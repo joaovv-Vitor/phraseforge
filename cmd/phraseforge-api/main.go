@@ -12,11 +12,10 @@ import (
 	"time"
 
 	"github.com/joaovv-Vitor/phraseforge/internal/httpapi"
-	"github.com/joaovv-Vitor/phraseforge/internal/storage"
 )
 
 func main() {
-	categories, err := storage.LoadCategories(apiDataFile())
+	categories, err := loadAPICategories(context.Background(), apiDatabaseFile())
 	if err != nil {
 		log.Fatal(err)
 	}
