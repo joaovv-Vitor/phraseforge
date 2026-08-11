@@ -27,8 +27,12 @@ func main() {
 	}()
 
 	server := &http.Server{
-		Addr:              apiAddress(),
-		Handler:           httpapi.NewHandler(categories, storage.NewSQLiteFavoriteRepository(database)),
+		Addr: apiAddress(),
+		Handler: httpapi.NewHandler(
+			categories,
+			storage.NewSQLiteFavoriteRepository(database),
+			storage.NewSQLiteHistoryRepository(database),
+		),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,
