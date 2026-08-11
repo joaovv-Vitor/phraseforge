@@ -165,7 +165,7 @@ func TestHandler(t *testing.T) {
 		},
 	}
 
-	handler := NewHandler(testCategories())
+	handler := NewHandler(testCategories(), nil)
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
 			request := httptest.NewRequest(tt.method, tt.path, nil)
@@ -236,7 +236,7 @@ func TestHandler(t *testing.T) {
 }
 
 func TestRandomPhraseWithoutProgrammingCategory(t *testing.T) {
-	handler := NewHandler([]phrase.Category{{Name: "study"}})
+	handler := NewHandler([]phrase.Category{{Name: "study"}}, nil)
 	request := httptest.NewRequest(http.MethodGet, "/phrases/random", nil)
 	recorder := httptest.NewRecorder()
 
