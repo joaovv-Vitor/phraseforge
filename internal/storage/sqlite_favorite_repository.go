@@ -6,7 +6,6 @@ import (
 	"errors"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/joaovv-Vitor/phraseforge/internal/phrase"
 )
@@ -109,13 +108,4 @@ func (repository *SQLiteFavoriteRepository) categoryID(ctx context.Context, name
 	}
 
 	return id, nil
-}
-
-func parseSQLiteTimestamp(value string) (time.Time, error) {
-	timestamp, err := time.Parse(time.DateTime, value)
-	if err != nil {
-		return time.Time{}, fmt.Errorf("parse %q: %w", value, err)
-	}
-
-	return timestamp, nil
 }
