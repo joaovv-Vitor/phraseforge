@@ -223,13 +223,13 @@ docker run --rm \
   phraseforge-api
 ```
 
-O container inclui `data/phrases.json`. Para usar outro arquivo, monte um volume e configure `PHRASEFORGE_DATA_FILE`:
+O container inclui um banco SQLite preparado em `data/phraseforge.db`. Para usar outro banco, monte o arquivo e configure `PHRASEFORGE_DATABASE_FILE`:
 
 ```bash
 docker run --rm \
   -p 8080:8080 \
-  -v "$(pwd)/data/custom-phrases.json:/app/data/custom-phrases.json:ro" \
-  -e PHRASEFORGE_DATA_FILE=/app/data/custom-phrases.json \
+  -v "$(pwd)/data/custom-phraseforge.db:/app/data/custom-phraseforge.db:ro" \
+  -e PHRASEFORGE_DATABASE_FILE=/app/data/custom-phraseforge.db \
   phraseforge-api
 ```
 
