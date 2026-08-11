@@ -169,6 +169,25 @@ Status mais comuns:
 - `405 Method Not Allowed`: metodo HTTP nao suportado. A resposta inclui `Allow: GET`.
 - `500 Internal Server Error`: estado interno inconsistente ou falha inesperada de geracao.
 
+## Banco SQLite
+
+Prepare o banco SQLite aplicando as migrations e importando as categorias do JSON:
+
+```bash
+go run ./cmd/phraseforge-db
+```
+
+Por padrao, o comando le `data/phrases.json` e cria ou atualiza `data/phraseforge.db`.
+Para usar outros caminhos, informe as flags:
+
+```bash
+go run ./cmd/phraseforge-db \
+  --database-file data/custom.db \
+  --data-file data/custom-phrases.json
+```
+
+O comando deve ser executado em um banco novo. Se as categorias ja existirem, a importacao falha para evitar duplicacao de dados.
+
 ## Docker
 
 Crie a imagem da API:
@@ -264,8 +283,11 @@ go vet ./...
 ## Estrutura
 
 ```text
-cmd/phraseforge/  Interface de linha de comando
-internal/phrase/  Dominio de categorias, templates e geracao
-internal/storage/ Leitura e validacao do arquivo JSON
-data/             Dados usados pela aplicacao
+cmd/phraseforge/     Interface de linha de comando
+cmd/phraseforge-api/ API HTTP
+cmd/phraseforge-db/  Preparacao do banco SQLite
+internal/phrase/     Dominio de categorias, templates e geracao
+internal/storage/    Fontes de dados JSON e SQLite
+internal/migrate/    Aplicacao de migrations SQLite
+data/                Dados usados pela aplicacao
 ```
