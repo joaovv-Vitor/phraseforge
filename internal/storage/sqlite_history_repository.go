@@ -56,6 +56,58 @@ RETURNING id, generated_at`, categoryID, content).Scan(&entry.ID, &generatedAt)
 	return entry, nil
 }
 
+// Record stores all generated phrases in a single transaction.
+func (repository *SQLiteHistoryRepository) Record(ctx context.Context, categoryName string, contents []string) error {
+	categoryName = strings.TrimSpace(categoryName)
+	if categoryName == "" {
+		return fmt.Errorf("record SQLite history entries: category name cannot be empty")
+	}
+	if len(contents) == 0 {
+		return fmt.Errorf("record SQLite history entries: contents cannot be empty")
+	}
+
+	normalizedContents := make([]string, 0, len(contents))
+	for index, content := range contents {
+		content = strings.TrimSpace(content)
+		if content == "" {
+			return fmt.Errorf("record SQLite history entries: content %d cannot be empty", index+1)
+		}
+		normalizedContents = append(normalizedContents, content)
+	}
+
+	transaction, err := repository.database.BeginTx(ctx, nil)
+	if err != nil {
+		return fmt.Errorf("begin SQLite history recording: %w", err)
+	}
+	defer transaction.Rollback()
+
+	var categoryID int64
+	err = transaction.QueryRowContext(ctx, "SELECT id FROM categories WHERE name = ?", categoryName).Scan(&categoryID)
+	if errors.Is(err, sql.ErrNoRows) {
+		return fmt.Errorf("record SQLite history entries for category %q: %w", categoryName, phrase.ErrHistoryCategoryNotFound)
+	}
+	if err != nil {
+		return fmt.Errorf("find SQLite history category %q: %w", categoryName, err)
+	}
+
+	for _, content := range normalizedContents {
+		if _, err := transaction.ExecContext(
+			ctx,
+			"INSERT INTO generation_history (category_id, content) VALUES (?, ?)",
+			categoryID,
+			content,
+		); err != nil {
+			return fmt.Errorf("insert SQLite history entry for category %q: %w", categoryName, err)
+		}
+	}
+
+	if err := transaction.Commit(); err != nil {
+		return fmt.Errorf("commit SQLite history recording: %w", err)
+	}
+
+	return nil
+}
+
 // List returns history entries from most recent to oldest.
 func (repository *SQLiteHistoryRepository) List(ctx context.Context) (_ []phrase.HistoryEntry, err error) {
 	rows, err := repository.database.QueryContext(ctx, `

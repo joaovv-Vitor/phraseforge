@@ -112,7 +112,7 @@ func TestFavoriteEndpoints(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			handler := NewHandler(testCategories(), &tt.store)
+			handler := NewHandler(testCategories(), &tt.store, nil)
 			request := httptest.NewRequest(tt.method, "/favorites", strings.NewReader(tt.body))
 			recorder := httptest.NewRecorder()
 

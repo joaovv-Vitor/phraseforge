@@ -56,15 +56,20 @@ type FavoriteStore interface {
 	List(context.Context) ([]phrase.Favorite, error)
 }
 
+// HistoryStore records generated phrases required by the HTTP API.
+type HistoryStore interface {
+	Record(context.Context, string, []string) error
+}
+
 // NewHandler returns the HTTP handler for the PhraseForge API.
-func NewHandler(categories []phrase.Category, favorites FavoriteStore) http.Handler {
+func NewHandler(categories []phrase.Category, favorites FavoriteStore, history HistoryStore) http.Handler {
 	mux := http.NewServeMux()
 	mux.HandleFunc("/health", health)
 	mux.HandleFunc("/categories", func(w http.ResponseWriter, r *http.Request) {
 		listCategories(w, r, categories)
 	})
 	mux.HandleFunc("/phrases/random", func(w http.ResponseWriter, r *http.Request) {
-		randomPhrase(w, r, categories)
+		randomPhrase(w, r, categories, history)
 	})
 	mux.HandleFunc("/favorites", func(w http.ResponseWriter, r *http.Request) {
 		favoritesHandler(w, r, favorites)
@@ -174,7 +179,7 @@ func toFavoriteResponse(favorite phrase.Favorite) favoriteResponse {
 	}
 }
 
-func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Category) {
+func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Category, history HistoryStore) {
 	if r.Method != http.MethodGet {
 		w.Header().Set("Allow", http.MethodGet)
 		writeJSONError(w, http.StatusMethodNotAllowed, "method not allowed")
@@ -233,6 +238,14 @@ func randomPhrase(w http.ResponseWriter, r *http.Request, categories []phrase.Ca
 			return
 		}
 		phrases = append(phrases, generated)
+	}
+	if history == nil {
+		writeJSONError(w, http.StatusInternalServerError, "failed to record generation history")
+		return
+	}
+	if err := history.Record(r.Context(), category.Name, phrases); err != nil {
+		writeJSONError(w, http.StatusInternalServerError, "failed to record generation history")
+		return
 	}
 
 	w.Header().Set("Content-Type", "application/json")

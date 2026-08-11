@@ -105,6 +105,111 @@ func TestSQLiteHistoryRepositoryAllowsRepeatedEntries(t *testing.T) {
 	}
 }
 
+func TestSQLiteHistoryRepositoryRecord(t *testing.T) {
+	ctx := context.Background()
+	database := openHistoryDatabase(t, ctx)
+	insertHistoryCategory(t, ctx, database, "programming")
+	repository := storage.NewSQLiteHistoryRepository(database)
+
+	err := repository.Record(ctx, " programming ", []string{
+		" Codigo simples reduz problemas futuros. ",
+		" A pratica constante fortalece o aprendizado. ",
+	})
+	if err != nil {
+		t.Fatalf("Record() unexpected error: %v", err)
+	}
+
+	entries, err := repository.List(ctx)
+	if err != nil {
+		t.Fatalf("List() unexpected error: %v", err)
+	}
+	if len(entries) != 2 {
+		t.Fatalf("List() returned %d entries, want 2", len(entries))
+	}
+	if entries[0].Content != "A pratica constante fortalece o aprendizado." {
+		t.Errorf("first entry content = %q", entries[0].Content)
+	}
+	if entries[1].Content != "Codigo simples reduz problemas futuros." {
+		t.Errorf("second entry content = %q", entries[1].Content)
+	}
+}
+
+func TestSQLiteHistoryRepositoryRecordRollsBackOnFailure(t *testing.T) {
+	ctx := context.Background()
+	database := openHistoryDatabase(t, ctx)
+	insertHistoryCategory(t, ctx, database, "programming")
+	repository := storage.NewSQLiteHistoryRepository(database)
+
+	if _, err := database.ExecContext(ctx, `
+CREATE TRIGGER reject_history_content
+BEFORE INSERT ON generation_history
+WHEN NEW.content = 'cannot persist'
+BEGIN
+    SELECT RAISE(ABORT, 'history content rejected');
+END`); err != nil {
+		t.Fatalf("create history trigger: %v", err)
+	}
+
+	err := repository.Record(ctx, "programming", []string{
+		"Codigo simples reduz problemas futuros.",
+		"cannot persist",
+	})
+	if err == nil {
+		t.Fatal("Record() error = nil, want insert error")
+	}
+
+	entries, err := repository.List(ctx)
+	if err != nil {
+		t.Fatalf("List() unexpected error: %v", err)
+	}
+	if len(entries) != 0 {
+		t.Errorf("List() returned %d entries after rollback, want 0", len(entries))
+	}
+}
+
+func TestSQLiteHistoryRepositoryRecordRejectsInvalidInput(t *testing.T) {
+	ctx := context.Background()
+	database := openHistoryDatabase(t, ctx)
+	insertHistoryCategory(t, ctx, database, "programming")
+	repository := storage.NewSQLiteHistoryRepository(database)
+
+	tests := []struct {
+		name     string
+		category string
+		contents []string
+		wantErr  string
+	}{
+		{
+			name:     "empty category",
+			contents: []string{"Codigo simples reduz problemas futuros."},
+			wantErr:  "category name cannot be empty",
+		},
+		{
+			name:     "empty contents",
+			category: "programming",
+			wantErr:  "contents cannot be empty",
+		},
+		{
+			name:     "empty phrase",
+			category: "programming",
+			contents: []string{" ", "Codigo simples reduz problemas futuros."},
+			wantErr:  "content 1 cannot be empty",
+		},
+	}
+
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			err := repository.Record(ctx, tt.category, tt.contents)
+			if err == nil {
+				t.Fatal("Record() error = nil, want an error")
+			}
+			if !strings.Contains(err.Error(), tt.wantErr) {
+				t.Errorf("Record() error = %q, want %q", err, tt.wantErr)
+			}
+		})
+	}
+}
+
 func TestSQLiteHistoryRepositoryList(t *testing.T) {
 	ctx := context.Background()
 	database := openHistoryDatabase(t, ctx)
