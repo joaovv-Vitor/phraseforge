@@ -3,6 +3,7 @@ package storage_test
 import (
 	"context"
 	"database/sql"
+	"errors"
 	"path/filepath"
 	"reflect"
 	"strings"
@@ -65,7 +66,7 @@ func TestSQLiteFavoriteRepositoryCreateRejectsInvalidInput(t *testing.T) {
 			name:     "unknown category",
 			category: "study",
 			content:  "A pratica constante fortalece o aprendizado.",
-			wantErr:  "category \"study\" not found",
+			wantErr:  "favorite category not found",
 		},
 	}
 
@@ -77,6 +78,9 @@ func TestSQLiteFavoriteRepositoryCreateRejectsInvalidInput(t *testing.T) {
 			}
 			if !strings.Contains(err.Error(), tt.wantErr) {
 				t.Errorf("Create() error = %q, want %q", err, tt.wantErr)
+			}
+			if tt.name == "unknown category" && !errors.Is(err, phrase.ErrFavoriteCategoryNotFound) {
+				t.Errorf("Create() error = %v, want ErrFavoriteCategoryNotFound", err)
 			}
 		})
 	}
@@ -95,8 +99,8 @@ func TestSQLiteFavoriteRepositoryCreateRejectsDuplicate(t *testing.T) {
 	if err == nil {
 		t.Fatal("second Create() error = nil, want duplicate error")
 	}
-	if !strings.Contains(err.Error(), "favorite already exists") {
-		t.Errorf("second Create() error = %q, want duplicate context", err)
+	if !errors.Is(err, phrase.ErrFavoriteAlreadyExists) {
+		t.Errorf("second Create() error = %v, want ErrFavoriteAlreadyExists", err)
 	}
 }
 

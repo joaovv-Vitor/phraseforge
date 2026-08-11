@@ -45,7 +45,7 @@ VALUES (?, ?)
 ON CONFLICT (category_id, content) DO NOTHING
 RETURNING id, created_at`, categoryID, content).Scan(&favorite.ID, &createdAt)
 	if errors.Is(err, sql.ErrNoRows) {
-		return phrase.Favorite{}, fmt.Errorf("create SQLite favorite: favorite already exists for category %q", categoryName)
+		return phrase.Favorite{}, fmt.Errorf("create SQLite favorite for category %q: %w", categoryName, phrase.ErrFavoriteAlreadyExists)
 	}
 	if err != nil {
 		return phrase.Favorite{}, fmt.Errorf("insert SQLite favorite for category %q: %w", categoryName, err)
@@ -102,7 +102,7 @@ func (repository *SQLiteFavoriteRepository) categoryID(ctx context.Context, name
 	var id int64
 	err := repository.database.QueryRowContext(ctx, "SELECT id FROM categories WHERE name = ?", name).Scan(&id)
 	if errors.Is(err, sql.ErrNoRows) {
-		return 0, fmt.Errorf("create SQLite favorite: category %q not found", name)
+		return 0, fmt.Errorf("create SQLite favorite for category %q: %w", name, phrase.ErrFavoriteCategoryNotFound)
 	}
 	if err != nil {
 		return 0, fmt.Errorf("find SQLite favorite category %q: %w", name, err)

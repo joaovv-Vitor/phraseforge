@@ -12,17 +12,23 @@ import (
 	"time"
 
 	"github.com/joaovv-Vitor/phraseforge/internal/httpapi"
+	"github.com/joaovv-Vitor/phraseforge/internal/storage"
 )
 
 func main() {
-	categories, err := loadAPICategories(context.Background(), apiDatabaseFile())
+	categories, database, err := openAPIData(context.Background(), apiDatabaseFile())
 	if err != nil {
 		log.Fatal(err)
 	}
+	defer func() {
+		if err := database.Close(); err != nil {
+			log.Printf("close API database: %v", err)
+		}
+	}()
 
 	server := &http.Server{
 		Addr:              apiAddress(),
-		Handler:           httpapi.NewHandler(categories),
+		Handler:           httpapi.NewHandler(categories, storage.NewSQLiteFavoriteRepository(database)),
 		ReadHeaderTimeout: 5 * time.Second,
 		ReadTimeout:       10 * time.Second,
 		WriteTimeout:      10 * time.Second,

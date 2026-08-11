@@ -130,6 +130,29 @@ curl http://localhost:8080/phrases/random
 }
 ```
 
+Criar um favorito:
+
+```bash
+curl -X POST http://localhost:8080/favorites \
+  -H 'Content-Type: application/json' \
+  -d '{"category":"programming","content":"Codigo simples reduz problemas futuros."}'
+```
+
+```json
+{
+  "id": 1,
+  "category": "programming",
+  "content": "Codigo simples reduz problemas futuros.",
+  "created_at": "2026-01-02T03:04:05Z"
+}
+```
+
+Listar favoritos:
+
+```bash
+curl http://localhost:8080/favorites
+```
+
 Gerar frases de uma categoria especifica:
 
 ```bash

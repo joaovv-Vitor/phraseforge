@@ -37,6 +37,37 @@ func TestLoadAPICategories(t *testing.T) {
 	}
 }
 
+func TestOpenAPIDataKeepsDatabaseAvailableForFavorites(t *testing.T) {
+	ctx := context.Background()
+	databaseFile := filepath.Join(t.TempDir(), "phraseforge.db")
+	prepareAPIDatabase(t, ctx, databaseFile, []phrase.Category{{
+		Name:     "programming",
+		Template: "{subject} {verb} {complement}",
+		Parts: phrase.Parts{
+			Subjects:    []string{"Codigo simples"},
+			Verbs:       []string{"reduz"},
+			Complements: []string{"problemas futuros"},
+		},
+	}})
+
+	categories, database, err := openAPIData(ctx, databaseFile)
+	if err != nil {
+		t.Fatalf("openAPIData() unexpected error: %v", err)
+	}
+	defer database.Close()
+
+	if len(categories) != 1 || categories[0].Name != "programming" {
+		t.Errorf("openAPIData() categories = %#v, want programming category", categories)
+	}
+	if _, err := storage.NewSQLiteFavoriteRepository(database).Create(
+		ctx,
+		"programming",
+		"Codigo simples reduz problemas futuros.",
+	); err != nil {
+		t.Errorf("create favorite with API database: %v", err)
+	}
+}
+
 func TestLoadAPICategoriesMissingDatabase(t *testing.T) {
 	databaseFile := filepath.Join(t.TempDir(), "missing.db")
 
