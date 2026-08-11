@@ -14,6 +14,7 @@
 - Repositorio SQLite para listar categorias em ordem alfabetica.
 - Importador transacional de categorias, templates e partes para SQLite.
 - Repositorio SQLite para carregar categorias completas para o gerador.
+- Comando para aplicar migrations SQLite e importar categorias do JSON.
 
 ## Persistencia Atual
 
@@ -27,9 +28,8 @@ Motivos:
 
 ### Proximas Etapas
 
-1. Criar um comando para preparar o banco com migrations e dados JSON.
-2. Migrar o carregamento da API de JSON para SQLite.
-3. Persistir favoritos e historico de geracao.
+1. Migrar o carregamento da API de JSON para SQLite.
+2. Persistir favoritos e historico de geracao.
 
 ## Evolucoes Futuras
 
