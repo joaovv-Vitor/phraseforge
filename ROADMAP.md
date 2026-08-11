@@ -13,6 +13,7 @@
 - Runner Go para aplicar migrations SQLite embutidas.
 - Repositorio SQLite para listar categorias em ordem alfabetica.
 - Importador transacional de categorias, templates e partes para SQLite.
+- Repositorio SQLite para carregar categorias completas para o gerador.
 
 ## Persistencia Atual
 
@@ -26,7 +27,7 @@ Motivos:
 
 ### Proximas Etapas
 
-1. Criar repositorio SQLite para carregar categorias completas.
+1. Criar um comando para preparar o banco com migrations e dados JSON.
 2. Migrar o carregamento da API de JSON para SQLite.
 3. Persistir favoritos e historico de geracao.
 
